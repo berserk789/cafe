@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>کافه</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;700&display=swap">
+<style>
+:root{--bg:#f6f2ec;--card:#fff;--tx:#2a2118;--mu:#7a6d60;--bd:#e6ddd0;--pr:#8a5a2b;--ok:#16a34a;--er:#dc2626;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#17130f;--card:#221c16;--tx:#f1e9de;--mu:#a89a8a;--bd:#38302700;--bd:#383027;--pr:#c9954f;color-scheme:dark}}
+:root[data-theme="dark"]{--bg:#17130f;--card:#221c16;--tx:#f1e9de;--mu:#a89a8a;--bd:#383027;--pr:#c9954f;color-scheme:dark}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--tx);font-family:Vazirmatn,Tahoma,sans-serif;font-size:14px}
+.w{max-width:900px;margin:0 auto;padding:16px}
+h1{font-size:20px;margin:4px 0 14px}h2{font-size:15px;margin:0 0 10px}
+.c{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:14px;margin-bottom:14px}
+input,select{font:inherit;padding:9px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx)}
+button{font:inherit;cursor:pointer;border:0;border-radius:8px;padding:9px 14px;background:var(--pr);color:#fff}
+button.g{background:transparent;color:var(--tx);border:1px solid var(--bd);padding:5px 9px;font-size:12px}
+button.d{color:var(--er)}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.row>input{flex:1;min-width:120px}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0}
+.chip{background:var(--bg);color:var(--tx);border:1px solid var(--bd);padding:8px 12px}
+.chip small{color:var(--mu);margin-right:6px}
+.chip.on{background:var(--pr);color:#fff;border-color:var(--pr)}.chip.on small{color:#fff}
+.lbl{color:var(--mu);font-size:12px;margin-top:10px}
+.cart{padding:8px 0;color:var(--mu)}
+.cart b{color:var(--tx)}
+.prog{height:8px;background:var(--bg);border-radius:9px;overflow:hidden;margin:8px 0}
+.prog i{display:block;height:100%;background:var(--pr)}
+.o{padding:10px 0;border-bottom:1px solid var(--bd);display:flex;justify-content:space-between;gap:10px}
+.o:last-child{border:0}.o small{color:var(--mu);display:block;margin-top:3px}
+.tag{font-size:11px;padding:2px 8px;border-radius:99px;background:var(--bg);color:var(--mu);white-space:nowrap}
+.em{text-align:center;color:var(--mu);padding:16px}
+dialog{border:1px solid var(--bd);border-radius:14px;background:var(--card);color:var(--tx);max-width:94vw;padding:14px}
+dialog::backdrop{background:rgba(0,0,0,.5)}
+dialog img{max-width:100%;max-height:65vh;display:block;margin:0 auto 10px;border-radius:8px}
+</style>
+</head>
+<body>
+<div class="w">
+<h1>☕ کافه</h1>
+
+<div class="c">
+<h2>🧾 سفارش جدید</h2>
+<div class="row"><input id="cn" placeholder="نام مشتری"></div>
+<div class="lbl">آیتم‌ها</div>
+<div class="chips" id="mi"></div>
+<div class="lbl">اضافه‌ها</div>
+<div class="chips" id="mx"></div>
+<div class="cart" id="cart"></div>
+<div class="row"><select id="py"><option value="cash">نقد</option><option value="debt">نسیه</option></select><button id="sub">✅ ثبت</button><button class="g" id="clr">پاک کردن</button></div>
+</div>
+
+<div class="c">
+<h2>📋 سفارش‌های ثبت‌شده</h2>
+<div id="pg"></div>
+<div class="prog"><i id="pb"></i></div>
+<div id="ol"></div>
+</div>
+
+<div class="c">
+<h2>🗂 لیست‌های ساخته‌شده</h2>
+<div id="sl"><div class="em">هنوز لیستی ساخته نشده</div></div>
+</div>
+
+<details class="c"><summary>⚙️ منو</summary>
+<div class="row" style="margin-top:10px">
+<input id="mn" placeholder="نام آیتم">
+<input id="mp" type="number" min="0" placeholder="قیمت (تومان)">
+<select id="mk"><option value="i">آیتم اصلی</option><option value="x">اضافه / افزودنی</option></select>
+<select id="ms"><option value="0">بدون انبار</option></select><button id="ma">➕ افزودن</button>
+</div>
+<div id="ml" style="margin-top:8px"></div>
+</details>
+</div>
+
+<details class="c"><summary>📦 انبار</summary>
+<div class="row" style="margin-top:10px"><input id="sn" placeholder="نام کالا"><input id="sq" type="number" placeholder="تعداد"><button id="sa">➕</button></div>
+<div id="sl2"></div></details>
+
+<details class="c"><summary>🛒 خرید</summary>
+<div class="row" style="margin-top:10px"><select id="ps"></select><input id="pq" type="number" placeholder="تعداد"><input id="pc" type="number" placeholder="مبلغ کل"><input id="pu" placeholder="فروشنده"><button id="pa">➕</button></div>
+<div id="pl"></div></details>
+
+<details class="c"><summary>💳 بدهی‌ها</summary><div id="dl" style="margin-top:10px"></div></details>
+
+<details class="c"><summary>📊 گزارش</summary><div id="rp" style="margin-top:10px"></div></details>
+
+<details class="c" id="qd" hidden><summary>📱 QR</summary>
+<div class="row" style="margin-top:10px">
+<input id="gu" placeholder="GitHub user">
+<input id="gr" placeholder="repo">
+<input id="gt" type="password" placeholder="token">
+<button id="gs">💾</button><span id="qm"></span>
+</div>
+<div style="margin-top:10px"><img id="qi" alt="QR" hidden style="width:220px;max-width:100%;background:#fff;border-radius:8px"><br><button class="g" id="qa" hidden>⬇️ QR</button></div>
+</details>
+
+<dialog id="dlg">
+<div id="dt" style="font-weight:600;margin-bottom:8px"></div>
+<img id="di" alt="لیست">
+<div class="row"><button id="dd">⬇️ دانلود عکس</button><button class="g" id="dc">بستن</button><span id="dm" style="color:var(--mu);font-size:12px"></span></div>
+</dialog>
+
+<script>
+const $=id=>document.getElementById(id);
+const nf=new Intl.NumberFormat('fa-IR');
+const df=new Intl.DateTimeFormat('fa-IR-u-ca-persian',{year:'numeric',month:'long',day:'numeric'});
+const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const LIM=10;
+let menu=[],orders=[],cart={},xs={},cfg={},acc={stock:[],pur:[],pay:[]};
+try{if(window.store){const d=window.store.load()||{};menu=d.menu||[];orders=d.orders||[];cfg=d.cfg||{};acc=d.acc||acc}else{menu=JSON.parse(localStorage.getItem('cm')||'[]');orders=JSON.parse(localStorage.getItem('co')||'[]');acc=JSON.parse(localStorage.getItem('ca')||'null')||acc}}catch(e){}
+const save=()=>{try{if(window.store){window.store.save({menu,orders,cfg,acc})}else{localStorage.setItem('ca',JSON.stringify(acc));localStorage.setItem('cm',JSON.stringify(menu));localStorage.setItem('co',JSON.stringify(orders))}}catch(e){}};
+const mid=id=>menu.find(m=>m.id==id);
+
+function orderText(o){
+const a=o.lines.map(l=>(l.q>1?nf.format(l.q)+'× ':'')+l.n).join('، ');
+const x=o.extras.length?' + '+o.extras.map(e=>e.n).join('، '):'';
+return a+x}
+function cartTotal(){let t=0;for(const k in cart){const m=mid(k);if(m)t+=m.price*cart[k]}for(const k in xs){const m=mid(k);if(m)t+=m.price}return t}
+
+function render(){
+const it=menu.filter(m=>m.k=='i'),ex=menu.filter(m=>m.k=='x');
+$('mi').innerHTML=it.length?it.map(m=>`<button class="chip ${cart[m.id]?'on':''}" data-a="i" data-id="${m.id}">${esc(m.n)}<small>${nf.format(m.price)}</small>${cart[m.id]?' ×'+nf.format(cart[m.id]):''}</button>`).join(''):'';
+$('mx').innerHTML=ex.length?ex.map(m=>`<button class="chip ${xs[m.id]?'on':''}" data-a="x" data-id="${m.id}">${esc(m.n)}<small>+${nf.format(m.price)}</small></button>`).join(''):'';
+const t=cartTotal();
+$('cart').innerHTML=`جمع: <b>${nf.format(t)} تومان</b>`;
+const pend=orders.filter(o=>!o.b);
+$('pg').textContent=`${nf.format(pend.length)} / ${nf.format(LIM)}`;
+$('pb').style.width=Math.min(100,pend.length/LIM*100)+'%';
+$('ol').innerHTML=pend.length?pend.map(o=>`<div class="o"><div><b>${esc(o.name)}</b><small>${esc(orderText(o))}</small></div><div style="text-align:left"><b>${nf.format(o.total)}</b> ${o.pay=='debt'?'<span class="tag">نسیه</span>':''}<br><button class="g" data-a="inv" data-id="${o.id}">🧾</button> <button class="g d" data-a="do" data-id="${o.id}">حذف</button></div></div>`).join(''):'<div class="em">—</div>';
+const bs=[...new Set(orders.filter(o=>o.b).map(o=>o.b))].sort((a,b)=>b-a);
+$('sl').innerHTML=bs.length?bs.map(b=>{const l=orders.filter(o=>o.b==b);return `<div class="o"><div>لیست شماره ${nf.format(b)}<small>${nf.format(l.length)} مشتری · ${nf.format(l.reduce((a,o)=>a+o.total,0))} تومان</small></div><button class="g" data-a="sh" data-id="${b}">نمایش / دانلود</button></div>`}).join(''):'<div class="em">هنوز لیستی ساخته نشده</div>';
+$('ml').innerHTML=menu.length?menu.map(m=>`<div class="o"><div>${esc(m.n)} <span class="tag">${m.k=='x'?'افزودنی':'آیتم'}</span><small>${nf.format(m.price)} تومان</small></div><button class="g d" data-a="dm" data-id="${m.id}">حذف</button></div>`).join(''):'<div class="em">—</div>';
+}
+
+$('ma').onclick=()=>{const n=$('mn').value.trim(),p=Number($('mp').value);if(!n||!(p>=0)||$('mp').value==='')return;
+menu.push({id:Date.now(),n,price:p,k:$('mk').value,sid:Number($('ms').value)||0});$('mn').value='';$('mp').value='';save();render();pub()};
+
+document.body.addEventListener('click',e=>{const b=e.target.closest('button[data-a]');if(!b)return;const a=b.dataset.a,id=b.dataset.id;
+if(a=='i'){cart[id]=(cart[id]||0)+1}
+else if(a=='x'){xs[id]?delete xs[id]:xs[id]=1}
+else if(a=='dm'){if(confirm('حذف شود؟')){menu=menu.filter(m=>m.id!=id);delete cart[id];delete xs[id];save();pub()}}
+else if(a=='do'){if(confirm('حذف شود؟')){const o=orders.find(o=>o.id==id);((o&&o.st)||[]).forEach(x=>{const s=acc.stock.find(s=>s.id==x.sid);if(s)s.q+=x.q});orders=orders.filter(o=>o.id!=id);save()}}
+else if(a=='sh'){showSheet(Number(id));return}
+render()});
+
+$('clr').onclick=()=>{cart={};xs={};render()};
+$('cart').onclick=null;
+
+$('sub').onclick=()=>{
+const name=$('cn').value.trim();
+if(!name){alert('نام مشتری');$('cn').focus();return}
+const lines=Object.keys(cart).map(k=>{const m=mid(k);return m&&{n:m.n,q:cart[k],p:m.price}}).filter(Boolean);
+if(!lines.length){alert('آیتم انتخاب کن');return}
+const extras=Object.keys(xs).map(k=>{const m=mid(k);return m&&{n:m.n,p:m.price}}).filter(Boolean);
+const total=lines.reduce((a,l)=>a+l.p*l.q,0)+extras.reduce((a,x)=>a+x.p,0);
+const st=[];lines.forEach(l=>{const m=menu.find(m=>m.n==l.n&&m.sid);if(m){st.push({sid:m.sid,q:l.q});const s=acc.stock.find(s=>s.id==m.sid);if(s)s.q-=l.q}});const pay=$('py').value;$('py').value='cash';orders.push({id:Date.now(),name,lines,extras,total,t:new Date().toISOString(),b:0,pay,st});
+cart={};xs={};$('cn').value='';
+const pend=orders.filter(o=>!o.b);
+if(pend.length>=LIM){const b=Math.max(0,...orders.map(o=>o.b))+1;pend.slice(0,LIM).forEach(o=>o.b=b);save();render();showSheet(b);return}
+save();render()};
+
+async function drawSheet(list,no){
+try{await document.fonts.load('600 22px Vazirmatn');await document.fonts.load('400 18px Vazirmatn')}catch(e){}
+const F='Vazirmatn,Tahoma,sans-serif',W=1000,P=40,IW=430;
+const cv=document.createElement('canvas'),x=cv.getContext('2d');
+const wrap=(s)=>{x.font='400 20px '+F;const ws=s.split(' '),ls=[];let c='';for(const w of ws){const t=c?c+' '+w:w;if(x.measureText(t).width>IW&&c){ls.push(c);c=w}else c=t}if(c)ls.push(c);return ls};
+const rows=list.map(o=>({o,ls:wrap(orderText(o))}));
+const hs=rows.map(r=>Math.max(64,r.ls.length*30+28));
+const H=150+hs.reduce((a,b)=>a+b,0)+90;
+cv.width=W;cv.height=H;
+x.direction='rtl';
+x.fillStyle='#fbf7f0';x.fillRect(0,0,W,H);
+x.fillStyle='#8a5a2b';x.fillRect(0,0,W,96);
+x.fillStyle='#fff';x.textAlign='right';x.font='700 30px '+F;x.fillText('☕ کافه',W-P,48);
+x.font='400 18px '+F;x.fillText(`لیست ${nf.format(no)} · ${df.format(new Date())}`,W-P,78);
+let y=96;
+x.fillStyle='#7a6d60';x.font='600 16px '+F;
+x.fillText('#',W-P,y+34);x.fillText('مشتری',W-P-50,y+34);x.fillText('خرید',W-P-260,y+34);x.textAlign='left';x.fillText('مبلغ (تومان)',P,y+34);
+y+=54;let sum=0;
+rows.forEach((r,i)=>{const h=hs[i];
+if(i%2==0){x.fillStyle='#f1e8da';x.fillRect(0,y,W,h)}
+x.fillStyle='#2a2118';x.textAlign='right';x.font='400 20px '+F;
+x.fillText(nf.format(i+1),W-P,y+38);
+x.font='600 21px '+F;x.fillText(r.o.name,W-P-50,y+38);
+x.font='400 20px '+F;r.ls.forEach((l,j)=>x.fillText(l,W-P-260,y+38+j*30));
+x.textAlign='left';x.font='600 21px '+F;x.fillText(nf.format(r.o.total),P,y+38);
+sum+=r.o.total;y+=h});
+x.fillStyle='#8a5a2b';x.fillRect(P,y+14,W-2*P,2);
+x.fillStyle='#2a2118';x.textAlign='right';x.font='700 24px '+F;x.fillText('جمع کل',W-P,y+58);
+x.textAlign='left';x.fillText(nf.format(sum)+' تومان',P,y+58);
+return new Promise(r=>cv.toBlob(r,'image/png'));
+}
+
+let curBlob=null,curNo=0,curUrl=null;
+async function showSheet(no){
+const list=orders.filter(o=>o.b==no);if(!list.length)return;
+$('dt').textContent=`لیست ${nf.format(no)}`;$('dm').textContent='';
+curNo=no;curBlob=await drawSheet(list,no);
+if(curUrl)URL.revokeObjectURL(curUrl);curUrl=URL.createObjectURL(curBlob);
+$('di').src=curUrl;
+if(!$('dlg').open)$('dlg').showModal()}
+$('dc').onclick=()=>$('dlg').close();
+$('dd').onclick=async()=>{
+try{if(!window.claude){const a=document.createElement('a');a.href=curUrl;a.download='cafe-list-'+curNo+'.png';document.body.appendChild(a);a.click();a.remove();return}const d=await claude.use('downloads');
+if(!d){$('dm').textContent='دانلود نشد';return}
+await d.save({filename:`cafe-list-${curNo}.png`,data:curBlob});$('dm').textContent='ذخیره شد ✓'}
+catch(e){$('dm').textContent=e&&e.code=='declined'?'':'ذخیره نشد'}};
+
+const pubUrl=()=>cfg.user&&cfg.repo?`https://${cfg.user}.github.io/${cfg.repo}/menu.html`:'';
+async function pub(){
+if(!window.store||!cfg.token||!cfg.user||!cfg.repo)return;
+$('qm').textContent='…';
+try{const ok=await window.store.publish({...cfg,menu:menu.map(({n,price,k})=>({n,price,k}))});$('qm').textContent=ok?'✓':'✗'}
+catch(e){$('qm').textContent='✗'}}
+async function qr(){
+const u=pubUrl();if(!window.store||!u)return;
+try{$('qi').src=await window.store.qr(u);$('qi').hidden=false;$('qa').hidden=false}catch(e){}}
+if(window.store){$('qd').hidden=false;$('gu').value=cfg.user||'';$('gr').value=cfg.repo||'';$('gt').value=cfg.token||'';qr()}
+$('gs').onclick=async()=>{cfg={user:$('gu').value.trim(),repo:$('gr').value.trim(),token:$('gt').value.trim()};save();await qr();pub()};
+$('qa').onclick=()=>{const a=document.createElement('a');a.href=$('qi').src;a.download='qr.png';document.body.appendChild(a);a.click();a.remove()};
+const SUM=(a,f)=>a.reduce((t,x)=>t+f(x),0);
+function arender(){
+const A=acc,m=v=>nf.format(v);
+for(const id of ['ms','ps']){const v=$(id).value;$(id).innerHTML=(id=='ms'?'<option value="0">بدون انبار</option>':'')+A.stock.map(x=>`<option value="${x.id}">${esc(x.n)}</option>`).join('');$(id).value=v}
+$('sl2').innerHTML=A.stock.length?A.stock.map(x=>`<div class="o"><div>${esc(x.n)}<small style="${x.q<=0?'color:var(--er)':''}">${m(x.q)}</small></div><button class="g d" data-a="sdel" data-id="${x.id}">حذف</button></div>`).join(''):'<div class="em">—</div>';
+$('pl').innerHTML=A.pur.length?A.pur.slice(-20).reverse().map(p=>`<div class="o"><div>${esc(p.n)} × ${m(p.q)}<small>${esc(p.sup||'')} ${df.format(new Date(p.t))}</small></div><div style="text-align:left"><b>${m(p.c)}</b><br><button class="g d" data-a="pdel" data-id="${p.id}">حذف</button></div></div>`).join(''):'<div class="em">—</div>';
+const D={};orders.forEach(o=>{if(o.pay=='debt')D[o.name]=(D[o.name]||0)+o.total});A.pay.forEach(p=>{D[p.name]=(D[p.name]||0)-p.amt});
+const dn=Object.keys(D).filter(k=>D[k]>0);
+$('dl').innerHTML=dn.length?dn.map(k=>`<div class="o"><div><b>${esc(k)}</b><small>${m(D[k])}</small></div><div class="row"><input type="number" placeholder="مبلغ" style="width:110px"><button class="g" data-a="dpay" data-n="${esc(k)}">دریافت</button></div></div>`).join(''):'<div class="em">—</div>';
+const today=t=>new Date(t).toDateString()==new Date().toDateString();
+const R=f=>{const os=orders.filter(o=>f(o.t)),ps=A.pur.filter(p=>f(p.t)),pp=A.pay.filter(p=>f(p.t));const sales=SUM(os,o=>o.total),buy=SUM(ps,p=>p.c);return [sales,SUM(os.filter(o=>o.pay!='debt'),o=>o.total)+SUM(pp,p=>p.amt),buy,sales-buy]};
+const a=R(today),b=R(()=>true),L=['فروش','دریافتی','خرید','سود'],open=SUM(dn,k=>D[k]);
+$('rp').innerHTML='<div class="o"><div></div><div>امروز</div><div>کل</div></div>'+L.map((l,i)=>`<div class="o"><div>${l}</div><div>${m(a[i])}</div><div>${m(b[i])}</div></div>`).join('')+`<div class="o"><div>بدهی باز</div><div></div><div>${m(open)}</div></div>`+orders.slice(-15).reverse().map(o=>`<div class="o"><div><b>${esc(o.name)}</b><small>${esc(orderText(o))}</small></div><div style="text-align:left"><b>${m(o.total)}</b> ${o.pay=='debt'?'<span class="tag">نسیه</span>':''}<br><button class="g" data-a="inv" data-id="${o.id}">🧾</button></div></div>`).join('');
+}
+$('sa').onclick=()=>{const n=$('sn').value.trim();if(!n)return;acc.stock.push({id:Date.now(),n,q:Number($('sq').value)||0});$('sn').value=$('sq').value='';save();render()};
+$('pa').onclick=()=>{const s=acc.stock.find(s=>s.id==$('ps').value),q=Number($('pq').value),c=Number($('pc').value);if(!s||!(q>0)||$('pc').value===''||!(c>=0))return;s.q+=q;acc.pur.push({id:Date.now(),sid:s.id,n:s.n,q,c,sup:$('pu').value.trim(),t:new Date().toISOString()});['pq','pc','pu'].forEach(i=>$(i).value='');save();render()};
+document.body.addEventListener('click',e=>{const b=e.target.closest('button[data-a]');if(!b)return;const a=b.dataset.a,id=b.dataset.id;
+if(a=='inv'){showInv(Number(id))}
+else if(a=='sdel'){if(confirm('حذف شود؟')){acc.stock=acc.stock.filter(s=>s.id!=id);menu.forEach(x=>{if(x.sid==id)x.sid=0});save();render()}}
+else if(a=='pdel'){if(confirm('حذف شود؟')){const p=acc.pur.find(p=>p.id==id),s=p&&acc.stock.find(s=>s.id==p.sid);if(s)s.q-=p.q;acc.pur=acc.pur.filter(p=>p.id!=id);save();render()}}
+else if(a=='dpay'){const amt=Number(b.parentElement.querySelector('input').value);if(!(amt>0))return;acc.pay.push({id:Date.now(),name:b.dataset.n,amt,t:new Date().toISOString()});save();render()}});
+async function drawInv(o){
+try{await document.fonts.load('600 22px Vazirmatn')}catch(e){}
+const F='Vazirmatn,Tahoma,sans-serif',W=600,P=30;
+const rows=[...o.lines.map(l=>[(l.q>1?nf.format(l.q)+'× ':'')+l.n,l.p*l.q]),...o.extras.map(e=>['+ '+e.n,e.p])];
+const H=300+rows.length*40+70,cv=document.createElement('canvas');cv.width=W;cv.height=H;
+const x=cv.getContext('2d');x.direction='rtl';
+x.fillStyle='#fff';x.fillRect(0,0,W,H);
+x.fillStyle='#8a5a2b';x.fillRect(0,0,W,80);
+x.fillStyle='#fff';x.textAlign='right';x.font='700 28px '+F;x.fillText('☕ کافه',W-P,50);
+x.fillStyle='#2a2118';x.font='400 18px '+F;
+x.fillText('فاکتور '+nf.format(orders.indexOf(o)+1),W-P,120);
+x.fillText('مشتری: '+o.name,W-P,150);
+x.fillText(df.format(new Date(o.t)),W-P,180);
+let y=205;x.fillStyle='#8a5a2b';x.fillRect(P,y,W-2*P,2);y+=10;
+rows.forEach(r=>{x.fillStyle='#2a2118';x.textAlign='right';x.font='400 20px '+F;x.fillText(r[0],W-P,y+28);x.textAlign='left';x.fillText(nf.format(r[1]),P,y+28);y+=40});
+x.fillStyle='#8a5a2b';x.fillRect(P,y+6,W-2*P,2);
+x.fillStyle='#2a2118';x.font='700 24px '+F;x.textAlign='right';x.fillText('جمع',W-P,y+50);x.textAlign='left';x.fillText(nf.format(o.total)+' تومان',P,y+50);
+x.textAlign='right';x.font='600 20px '+F;x.fillStyle=o.pay=='debt'?'#dc2626':'#16a34a';x.fillText(o.pay=='debt'?'نسیه':'پرداخت شد',W-P,y+90);
+return new Promise(r=>cv.toBlob(r,'image/png'))}
+async function showInv(id){
+const o=orders.find(o=>o.id==id);if(!o)return;
+$('dt').textContent='فاکتور '+o.name;$('dm').textContent='';
+curNo='inv'+id;curBlob=await drawInv(o);
+if(curUrl)URL.revokeObjectURL(curUrl);curUrl=URL.createObjectURL(curBlob);$('di').src=curUrl;
+if(!$('dlg').open)$('dlg').showModal()}
+const _r=render;render=function(){_r();arender()};
+render();
+</script>
+</body>
+</html>
