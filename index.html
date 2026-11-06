@@ -51,7 +51,7 @@ dialog img{max-width:100%;max-height:65vh;display:block;margin:0 auto 10px;borde
 <div class="lbl">اضافه‌ها</div>
 <div class="chips" id="mx"></div>
 <div class="cart" id="cart"></div>
-<div class="row"><button id="sub">✅ ثبت</button><button class="g" id="clr">پاک کردن</button></div>
+<div class="row"><select id="py"><option value="cash">نقد</option><option value="debt">نسیه</option></select><button id="sub">✅ ثبت</button><button class="g" id="clr">پاک کردن</button></div>
 </div>
 
 <div class="c">
@@ -71,11 +71,23 @@ dialog img{max-width:100%;max-height:65vh;display:block;margin:0 auto 10px;borde
 <input id="mn" placeholder="نام آیتم">
 <input id="mp" type="number" min="0" placeholder="قیمت (تومان)">
 <select id="mk"><option value="i">آیتم اصلی</option><option value="x">اضافه / افزودنی</option></select>
-<button id="ma">➕ افزودن</button>
+<select id="ms"><option value="0">بدون انبار</option></select><button id="ma">➕ افزودن</button>
 </div>
 <div id="ml" style="margin-top:8px"></div>
 </details>
 </div>
+
+<details class="c"><summary>📦 انبار</summary>
+<div class="row" style="margin-top:10px"><input id="sn" placeholder="نام کالا"><input id="sq" type="number" placeholder="تعداد"><button id="sa">➕</button></div>
+<div id="sl2"></div></details>
+
+<details class="c"><summary>🛒 خرید</summary>
+<div class="row" style="margin-top:10px"><select id="ps"></select><input id="pq" type="number" placeholder="تعداد"><input id="pc" type="number" placeholder="مبلغ کل"><input id="pu" placeholder="فروشنده"><button id="pa">➕</button></div>
+<div id="pl"></div></details>
+
+<details class="c"><summary>💳 بدهی‌ها</summary><div id="dl" style="margin-top:10px"></div></details>
+
+<details class="c"><summary>📊 گزارش</summary><div id="rp" style="margin-top:10px"></div></details>
 
 <details class="c" id="qd" hidden><summary>📱 QR</summary>
 <div class="row" style="margin-top:10px">
@@ -99,9 +111,9 @@ const nf=new Intl.NumberFormat('fa-IR');
 const df=new Intl.DateTimeFormat('fa-IR-u-ca-persian',{year:'numeric',month:'long',day:'numeric'});
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const LIM=10;
-let menu=[],orders=[],cart={},xs={},cfg={};
-try{if(window.store){const d=window.store.load()||{};menu=d.menu||[];orders=d.orders||[];cfg=d.cfg||{}}else{menu=JSON.parse(localStorage.getItem('cm')||'[]');orders=JSON.parse(localStorage.getItem('co')||'[]')}}catch(e){}
-const save=()=>{try{if(window.store){window.store.save({menu,orders,cfg})}else{localStorage.setItem('cm',JSON.stringify(menu));localStorage.setItem('co',JSON.stringify(orders))}}catch(e){}};
+let menu=[],orders=[],cart={},xs={},cfg={},acc={stock:[],pur:[],pay:[]};
+try{if(window.store){const d=window.store.load()||{};menu=d.menu||[];orders=d.orders||[];cfg=d.cfg||{};acc=d.acc||acc}else{menu=JSON.parse(localStorage.getItem('cm')||'[]');orders=JSON.parse(localStorage.getItem('co')||'[]');acc=JSON.parse(localStorage.getItem('ca')||'null')||acc}}catch(e){}
+const save=()=>{try{if(window.store){window.store.save({menu,orders,cfg,acc})}else{localStorage.setItem('ca',JSON.stringify(acc));localStorage.setItem('cm',JSON.stringify(menu));localStorage.setItem('co',JSON.stringify(orders))}}catch(e){}};
 const mid=id=>menu.find(m=>m.id==id);
 
 function orderText(o){
@@ -119,20 +131,20 @@ $('cart').innerHTML=`جمع: <b>${nf.format(t)} تومان</b>`;
 const pend=orders.filter(o=>!o.b);
 $('pg').textContent=`${nf.format(pend.length)} / ${nf.format(LIM)}`;
 $('pb').style.width=Math.min(100,pend.length/LIM*100)+'%';
-$('ol').innerHTML=pend.length?pend.map(o=>`<div class="o"><div><b>${esc(o.name)}</b><small>${esc(orderText(o))}</small></div><div style="text-align:left"><b>${nf.format(o.total)}</b><br><button class="g d" data-a="do" data-id="${o.id}">حذف</button></div></div>`).join(''):'<div class="em">—</div>';
+$('ol').innerHTML=pend.length?pend.map(o=>`<div class="o"><div><b>${esc(o.name)}</b><small>${esc(orderText(o))}</small></div><div style="text-align:left"><b>${nf.format(o.total)}</b> ${o.pay=='debt'?'<span class="tag">نسیه</span>':''}<br><button class="g" data-a="inv" data-id="${o.id}">🧾</button> <button class="g d" data-a="do" data-id="${o.id}">حذف</button></div></div>`).join(''):'<div class="em">—</div>';
 const bs=[...new Set(orders.filter(o=>o.b).map(o=>o.b))].sort((a,b)=>b-a);
 $('sl').innerHTML=bs.length?bs.map(b=>{const l=orders.filter(o=>o.b==b);return `<div class="o"><div>لیست شماره ${nf.format(b)}<small>${nf.format(l.length)} مشتری · ${nf.format(l.reduce((a,o)=>a+o.total,0))} تومان</small></div><button class="g" data-a="sh" data-id="${b}">نمایش / دانلود</button></div>`}).join(''):'<div class="em">هنوز لیستی ساخته نشده</div>';
 $('ml').innerHTML=menu.length?menu.map(m=>`<div class="o"><div>${esc(m.n)} <span class="tag">${m.k=='x'?'افزودنی':'آیتم'}</span><small>${nf.format(m.price)} تومان</small></div><button class="g d" data-a="dm" data-id="${m.id}">حذف</button></div>`).join(''):'<div class="em">—</div>';
 }
 
 $('ma').onclick=()=>{const n=$('mn').value.trim(),p=Number($('mp').value);if(!n||!(p>=0)||$('mp').value==='')return;
-menu.push({id:Date.now(),n,price:p,k:$('mk').value});$('mn').value='';$('mp').value='';save();render();pub()};
+menu.push({id:Date.now(),n,price:p,k:$('mk').value,sid:Number($('ms').value)||0});$('mn').value='';$('mp').value='';save();render();pub()};
 
 document.body.addEventListener('click',e=>{const b=e.target.closest('button[data-a]');if(!b)return;const a=b.dataset.a,id=b.dataset.id;
 if(a=='i'){cart[id]=(cart[id]||0)+1}
 else if(a=='x'){xs[id]?delete xs[id]:xs[id]=1}
 else if(a=='dm'){if(confirm('حذف شود؟')){menu=menu.filter(m=>m.id!=id);delete cart[id];delete xs[id];save();pub()}}
-else if(a=='do'){if(confirm('حذف شود؟')){orders=orders.filter(o=>o.id!=id);save()}}
+else if(a=='do'){if(confirm('حذف شود؟')){const o=orders.find(o=>o.id==id);((o&&o.st)||[]).forEach(x=>{const s=acc.stock.find(s=>s.id==x.sid);if(s)s.q+=x.q});orders=orders.filter(o=>o.id!=id);save()}}
 else if(a=='sh'){showSheet(Number(id));return}
 render()});
 
@@ -146,7 +158,7 @@ const lines=Object.keys(cart).map(k=>{const m=mid(k);return m&&{n:m.n,q:cart[k],
 if(!lines.length){alert('آیتم انتخاب کن');return}
 const extras=Object.keys(xs).map(k=>{const m=mid(k);return m&&{n:m.n,p:m.price}}).filter(Boolean);
 const total=lines.reduce((a,l)=>a+l.p*l.q,0)+extras.reduce((a,x)=>a+x.p,0);
-orders.push({id:Date.now(),name,lines,extras,total,t:new Date().toISOString(),b:0});
+const st=[];lines.forEach(l=>{const m=menu.find(m=>m.n==l.n&&m.sid);if(m){st.push({sid:m.sid,q:l.q});const s=acc.stock.find(s=>s.id==m.sid);if(s)s.q-=l.q}});const pay=$('py').value;$('py').value='cash';orders.push({id:Date.now(),name,lines,extras,total,t:new Date().toISOString(),b:0,pay,st});
 cart={};xs={};$('cn').value='';
 const pend=orders.filter(o=>!o.b);
 if(pend.length>=LIM){const b=Math.max(0,...orders.map(o=>o.b))+1;pend.slice(0,LIM).forEach(o=>o.b=b);save();render();showSheet(b);return}
@@ -211,6 +223,53 @@ try{$('qi').src=await window.store.qr(u);$('qi').hidden=false;$('qa').hidden=fal
 if(window.store){$('qd').hidden=false;$('gu').value=cfg.user||'';$('gr').value=cfg.repo||'';$('gt').value=cfg.token||'';qr()}
 $('gs').onclick=async()=>{cfg={user:$('gu').value.trim(),repo:$('gr').value.trim(),token:$('gt').value.trim()};save();await qr();pub()};
 $('qa').onclick=()=>{const a=document.createElement('a');a.href=$('qi').src;a.download='qr.png';document.body.appendChild(a);a.click();a.remove()};
+const SUM=(a,f)=>a.reduce((t,x)=>t+f(x),0);
+function arender(){
+const A=acc,m=v=>nf.format(v);
+for(const id of ['ms','ps']){const v=$(id).value;$(id).innerHTML=(id=='ms'?'<option value="0">بدون انبار</option>':'')+A.stock.map(x=>`<option value="${x.id}">${esc(x.n)}</option>`).join('');$(id).value=v}
+$('sl2').innerHTML=A.stock.length?A.stock.map(x=>`<div class="o"><div>${esc(x.n)}<small style="${x.q<=0?'color:var(--er)':''}">${m(x.q)}</small></div><button class="g d" data-a="sdel" data-id="${x.id}">حذف</button></div>`).join(''):'<div class="em">—</div>';
+$('pl').innerHTML=A.pur.length?A.pur.slice(-20).reverse().map(p=>`<div class="o"><div>${esc(p.n)} × ${m(p.q)}<small>${esc(p.sup||'')} ${df.format(new Date(p.t))}</small></div><div style="text-align:left"><b>${m(p.c)}</b><br><button class="g d" data-a="pdel" data-id="${p.id}">حذف</button></div></div>`).join(''):'<div class="em">—</div>';
+const D={};orders.forEach(o=>{if(o.pay=='debt')D[o.name]=(D[o.name]||0)+o.total});A.pay.forEach(p=>{D[p.name]=(D[p.name]||0)-p.amt});
+const dn=Object.keys(D).filter(k=>D[k]>0);
+$('dl').innerHTML=dn.length?dn.map(k=>`<div class="o"><div><b>${esc(k)}</b><small>${m(D[k])}</small></div><div class="row"><input type="number" placeholder="مبلغ" style="width:110px"><button class="g" data-a="dpay" data-n="${esc(k)}">دریافت</button></div></div>`).join(''):'<div class="em">—</div>';
+const today=t=>new Date(t).toDateString()==new Date().toDateString();
+const R=f=>{const os=orders.filter(o=>f(o.t)),ps=A.pur.filter(p=>f(p.t)),pp=A.pay.filter(p=>f(p.t));const sales=SUM(os,o=>o.total),buy=SUM(ps,p=>p.c);return [sales,SUM(os.filter(o=>o.pay!='debt'),o=>o.total)+SUM(pp,p=>p.amt),buy,sales-buy]};
+const a=R(today),b=R(()=>true),L=['فروش','دریافتی','خرید','سود'],open=SUM(dn,k=>D[k]);
+$('rp').innerHTML='<div class="o"><div></div><div>امروز</div><div>کل</div></div>'+L.map((l,i)=>`<div class="o"><div>${l}</div><div>${m(a[i])}</div><div>${m(b[i])}</div></div>`).join('')+`<div class="o"><div>بدهی باز</div><div></div><div>${m(open)}</div></div>`+orders.slice(-15).reverse().map(o=>`<div class="o"><div><b>${esc(o.name)}</b><small>${esc(orderText(o))}</small></div><div style="text-align:left"><b>${m(o.total)}</b> ${o.pay=='debt'?'<span class="tag">نسیه</span>':''}<br><button class="g" data-a="inv" data-id="${o.id}">🧾</button></div></div>`).join('');
+}
+$('sa').onclick=()=>{const n=$('sn').value.trim();if(!n)return;acc.stock.push({id:Date.now(),n,q:Number($('sq').value)||0});$('sn').value=$('sq').value='';save();render()};
+$('pa').onclick=()=>{const s=acc.stock.find(s=>s.id==$('ps').value),q=Number($('pq').value),c=Number($('pc').value);if(!s||!(q>0)||$('pc').value===''||!(c>=0))return;s.q+=q;acc.pur.push({id:Date.now(),sid:s.id,n:s.n,q,c,sup:$('pu').value.trim(),t:new Date().toISOString()});['pq','pc','pu'].forEach(i=>$(i).value='');save();render()};
+document.body.addEventListener('click',e=>{const b=e.target.closest('button[data-a]');if(!b)return;const a=b.dataset.a,id=b.dataset.id;
+if(a=='inv'){showInv(Number(id))}
+else if(a=='sdel'){if(confirm('حذف شود؟')){acc.stock=acc.stock.filter(s=>s.id!=id);menu.forEach(x=>{if(x.sid==id)x.sid=0});save();render()}}
+else if(a=='pdel'){if(confirm('حذف شود؟')){const p=acc.pur.find(p=>p.id==id),s=p&&acc.stock.find(s=>s.id==p.sid);if(s)s.q-=p.q;acc.pur=acc.pur.filter(p=>p.id!=id);save();render()}}
+else if(a=='dpay'){const amt=Number(b.parentElement.querySelector('input').value);if(!(amt>0))return;acc.pay.push({id:Date.now(),name:b.dataset.n,amt,t:new Date().toISOString()});save();render()}});
+async function drawInv(o){
+try{await document.fonts.load('600 22px Vazirmatn')}catch(e){}
+const F='Vazirmatn,Tahoma,sans-serif',W=600,P=30;
+const rows=[...o.lines.map(l=>[(l.q>1?nf.format(l.q)+'× ':'')+l.n,l.p*l.q]),...o.extras.map(e=>['+ '+e.n,e.p])];
+const H=300+rows.length*40+70,cv=document.createElement('canvas');cv.width=W;cv.height=H;
+const x=cv.getContext('2d');x.direction='rtl';
+x.fillStyle='#fff';x.fillRect(0,0,W,H);
+x.fillStyle='#8a5a2b';x.fillRect(0,0,W,80);
+x.fillStyle='#fff';x.textAlign='right';x.font='700 28px '+F;x.fillText('☕ کافه',W-P,50);
+x.fillStyle='#2a2118';x.font='400 18px '+F;
+x.fillText('فاکتور '+nf.format(orders.indexOf(o)+1),W-P,120);
+x.fillText('مشتری: '+o.name,W-P,150);
+x.fillText(df.format(new Date(o.t)),W-P,180);
+let y=205;x.fillStyle='#8a5a2b';x.fillRect(P,y,W-2*P,2);y+=10;
+rows.forEach(r=>{x.fillStyle='#2a2118';x.textAlign='right';x.font='400 20px '+F;x.fillText(r[0],W-P,y+28);x.textAlign='left';x.fillText(nf.format(r[1]),P,y+28);y+=40});
+x.fillStyle='#8a5a2b';x.fillRect(P,y+6,W-2*P,2);
+x.fillStyle='#2a2118';x.font='700 24px '+F;x.textAlign='right';x.fillText('جمع',W-P,y+50);x.textAlign='left';x.fillText(nf.format(o.total)+' تومان',P,y+50);
+x.textAlign='right';x.font='600 20px '+F;x.fillStyle=o.pay=='debt'?'#dc2626':'#16a34a';x.fillText(o.pay=='debt'?'نسیه':'پرداخت شد',W-P,y+90);
+return new Promise(r=>cv.toBlob(r,'image/png'))}
+async function showInv(id){
+const o=orders.find(o=>o.id==id);if(!o)return;
+$('dt').textContent='فاکتور '+o.name;$('dm').textContent='';
+curNo='inv'+id;curBlob=await drawInv(o);
+if(curUrl)URL.revokeObjectURL(curUrl);curUrl=URL.createObjectURL(curBlob);$('di').src=curUrl;
+if(!$('dlg').open)$('dlg').showModal()}
+const _r=render;render=function(){_r();arender()};
 render();
 </script>
 </body>
